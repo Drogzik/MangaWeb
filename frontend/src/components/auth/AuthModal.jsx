@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import SocialButtons from './SocialButtons';
+import StarfieldCanvas from './StarfieldCanvas';
 
 function PasswordField({ id, name, placeholder, autoComplete, minLength, required }) {
   const [visible, setVisible] = useState(false);
@@ -89,7 +90,9 @@ export default function AuthModal() {
 
   return (
     <div className={`auth-overlay${authOpen ? ' auth-overlay--open' : ''}`}>
-      <div className="auth-overlay__backdrop" onClick={closeAuth} />
+      <div className="auth-overlay__backdrop" onClick={closeAuth}>
+        {authOpen && <StarfieldCanvas />}
+      </div>
       <div className={`auth-modal${authTab === 'register' ? ' auth-modal--register' : ''}`}>
         <button type="button" className="auth-modal__close" onClick={closeAuth}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>

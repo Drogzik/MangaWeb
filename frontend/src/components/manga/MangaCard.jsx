@@ -1,9 +1,11 @@
+import { Link } from 'react-router-dom';
+
 export default function MangaCard({ title, type, cover, rating, status, isNew, variant = 'default' }) {
   const isCatalog = variant === 'catalog';
   const isNewCard = variant === 'new';
 
   return (
-    <article className={`manga-card${isNewCard ? ' manga-card--new' : ''}`}>
+    <Link to="/manga/1" className={`manga-card${isNewCard ? ' manga-card--new' : ''}`}>
       {isNewCard && <span className="manga-card__new-badge">NEW</span>}
       <div className={`manga-card__cover cover cover--${cover}`}>
         {status && <span className="manga-card__status">{status}</span>}
@@ -23,6 +25,6 @@ export default function MangaCard({ title, type, cover, rating, status, isNew, v
       </div>
       {isNewCard && <p className="manga-card__type">{type}</p>}
       <h3 className="manga-card__title">{title}</h3>
-    </article>
+    </Link>
   );
 }

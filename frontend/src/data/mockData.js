@@ -23,16 +23,11 @@ export const continueReading = [
 export const labels = [
   { name: 'Исекай', cover: 13 },
   { name: 'Романтика', cover: 14 },
-  { name: 'Система', cover: 15 },
-  { name: 'Повседневность', cover: 16 },
-  { name: 'Эротика', cover: 17 },
   { name: 'Экшен', cover: 18 },
   { name: 'Фэнтези', cover: 19 },
   { name: 'Комедия', cover: 20 },
   { name: 'Драма', cover: 21 },
-  { name: 'Ужасы', cover: 22 },
   { name: 'Мистика', cover: 23 },
-  { name: 'Мурим', cover: 24 },
 ];
 
 export const latestUpdates = [
@@ -45,6 +40,42 @@ export const latestUpdates = [
   { title: 'Стал мишенью у хулиганки', type: 'manhwa', cover: 20, chapter: 'Глава 45', time: '1 час назад', extra: true },
   { title: 'Система постапокалиптического мира', type: 'manhua', cover: 21, chapter: 'Глава 411', time: '3 часа назад', extra: true },
 ];
+
+export const mangaDetails = {
+  id: 1,
+  title: 'Расхититель гробниц',
+  originalTitle: 'Tomb Raider King / 도굴왕',
+  type: 'Манхва',
+  year: 2019,
+  cover: 8,
+  imageUrl: 'https://cdn.readmanga.io/manga_posters/tomb-raider-king.jpg', // Placeholder for actual cover
+  bgUrl: 'https://images.unsplash.com/photo-1618331835717-801e976710b2?q=80&w=2000&auto=format&fit=crop', // A nice dramatic background
+  rating: '9.11',
+  votes: '3506',
+  views: '9.8M',
+  status: 'Завершён',
+  chaptersCount: 411,
+  format: 'В цвете, Веб, Вебтун',
+  ageRating: '16+',
+  description: 'Божественные гробницы в современном мире. Люди, которые используют способности героев при помощи реликвий и получают неимоверные богатства. А также загадочный расхититель гробниц, появившийся из ниоткуда...\n\nГлавный герой, чья жизнь была разрушена и который был предан, получает шанс вернуться в прошлое. Теперь он расхититель гробниц, который заберет все реликвии себе!',
+  tags: [
+    'Приключения', 'Фантастика', 'Фэнтези', 'Исекай', 'Насилие / Жестокость', 'Магия', 'Монстры', 'Путешествия во времени', 'Артефакты'
+  ],
+  authors: [
+    { name: 'Redice Studio', role: 'Студия' },
+    { name: 'Sanji-jiksong', role: 'Автор' },
+    { name: 'Yoonz', role: 'Художник' }
+  ],
+  translators: [
+    { name: 'ReManga', role: 'Переводчик' },
+    { name: 'Студия Ультра', role: 'Редактор' }
+  ],
+  similar: [
+    { title: 'Поднятие уровня в одиночку', type: 'Манхва', cover: 8, rating: '9.50' },
+    { title: 'Возвращение Рыцаря Разрушения', type: 'Манхва', cover: 3, rating: '8.92' },
+    { title: 'Психопат в Муриме', type: 'Манхва', cover: 7, rating: '9.43' }
+  ]
+};
 
 export const activityUsers = [
   { rank: 1, initials: 'BS', name: 'Baby Shark', level: 3650, xp: '+45 XP', variant: 'gold' },

@@ -1,6 +1,7 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Tabs from '../components/ui/Tabs';
 import MangaCard from '../components/manga/MangaCard';
-import Hero from '../components/manga/Hero';
 import { useContinueFade } from '../hooks/useDragScroll';
 import { useDragScroll } from '../hooks/useDragScroll';
 import {
@@ -10,19 +11,19 @@ import {
   latestUpdates,
   activityUsers,
 } from '../data/mockData';
-import { useState } from 'react';
+
 
 const tagClass = { manga: 'tag--manga', manhwa: 'tag--manhwa', manhua: 'tag--manhua' };
 
 export default function HomePage() {
   const { trackRef, sliderRef } = useContinueFade();
   const labelsRef = useDragScroll();
+  const mangaRowRef = useDragScroll();
   const [updatesExpanded, setUpdatesExpanded] = useState(false);
 
   return (
     <main className="page page--active">
       <div className="container container--wide">
-        <Hero />
         <section className="section">
           <div className="section__header">
             <div className="section__title-row">
@@ -31,7 +32,7 @@ export default function HomePage() {
             </div>
             <Tabs items={['За день', 'За неделю', 'За месяц']} />
           </div>
-          <div className="manga-row">
+          <div className="manga-row drag-scroll" ref={mangaRowRef}>
             {topReadManga.map(item => (
               <MangaCard key={item.title} {...item} />
             ))}
@@ -49,7 +50,7 @@ export default function HomePage() {
           <div className="continue-slider" ref={sliderRef}>
             <div className="continue-slider__track drag-scroll" ref={trackRef}>
               {continueReading.map(item => (
-                <article key={item.title} className="continue-item">
+                <Link to="/manga/1" key={item.title} className="continue-item">
                   <div className="continue-item__cover-wrap">
                     <div className={`continue-item__cover cover cover--${item.cover}`} />
                     <span className="continue-item__type">{item.type}</span>
@@ -60,7 +61,7 @@ export default function HomePage() {
                     <time>{item.time}</time>
                     <div className="continue-item__bar"><span style={{ width: `${item.progress}%` }} /></div>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
           </div>
@@ -90,16 +91,16 @@ export default function HomePage() {
           </div>
           <div className={`updates-list${updatesExpanded ? ' updates-list--expanded' : ''}`}>
             {latestUpdates.map(item => (
-              <article key={item.title} className={`update-item${item.extra ? ' update-item--extra' : ''}`}>
+              <Link to="/manga/1" key={item.title} className={`update-item${item.extra ? ' update-item--extra' : ''}`}>
                 <div className={`update-item__cover cover cover--${item.cover}`} />
                 <div className="update-item__body">
                   <span className={`tag ${tagClass[item.type]}`}>{item.type}</span>
                   <h3>{item.title}</h3>
-                  <a href="#" className="update-item__chapter" onClick={e => e.preventDefault()}>
+                  <div className="update-item__chapter">
                     {item.chapter} <time>{item.time}</time>
-                  </a>
+                  </div>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
           {!updatesExpanded && (
@@ -110,22 +111,24 @@ export default function HomePage() {
         <section className="section section--secondary">
           <div className="activity-block">
             <div className="activity-block__header">
-              <h3>Активность пользователей</h3>
-              <a href="#" className="activity-block__link" onClick={e => e.preventDefault()}>Топ пользователей →</a>
+              <h3>Топ пользователей</h3>
+              <a href="#" className="activity-block__link" onClick={e => e.preventDefault()}>Все →</a>
             </div>
-            <div className="activity-grid">
+            <div className="activity-grid-h">
               {activityUsers.map(user => (
                 <a
                   key={user.name}
                   href="#"
-                  className={`activity-card${user.variant ? ` activity-card--${user.variant}` : ''}`}
+                  className={`activity-item${user.variant ? ` activity-item--${user.variant}` : ''}`}
                   onClick={e => e.preventDefault()}
                 >
-                  <span className="activity-card__rank">{user.rank}</span>
-                  <div className="activity-card__avatar">{user.initials}</div>
-                  <strong className="activity-card__name">{user.name}</strong>
-                  <span className="activity-card__level">Ур. {user.level}</span>
-                  <span className="activity-card__xp">{user.xp}</span>
+                  <span className="activity-item__rank">{user.rank}</span>
+                  <div className="activity-item__avatar">{user.initials}</div>
+                  <div className="activity-item__info">
+                    <strong>{user.name}</strong>
+                    <span>Ур. {user.level}</span>
+                  </div>
+                  <span className="activity-item__xp">{user.xp}</span>
                 </a>
               ))}
             </div>

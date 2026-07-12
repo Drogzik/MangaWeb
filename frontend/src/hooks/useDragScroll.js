@@ -46,11 +46,46 @@ export function useDragScroll() {
       }
     };
 
+    let lastScrollLeft = -1;
+    let lastDeltaY = 0;
+    let stuckCount = 0;
+
     const onWheel = (e) => {
       if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        e.preventDefault();
-        element.scrollLeft += e.deltaY;
+        const canScrollLeft = element.scrollLeft > 0;
+        const canScrollRight = element.scrollLeft < element.scrollWidth - element.clientWidth - 1;
+
+        if ((e.deltaY < 0 && canScrollLeft) || (e.deltaY > 0 && canScrollRight)) {
+          // If direction changed, reset stuck detection
+          if (Math.sign(e.deltaY) !== Math.sign(lastDeltaY)) {
+            stuckCount = 0;
+          }
+
+          if (element.scrollLeft === lastScrollLeft && stuckCount > 0) {
+            // We are stuck in this direction. Let page scroll instantly to avoid lag.
+            lastDeltaY = e.deltaY;
+            return;
+          }
+
+          if (element.scrollLeft === lastScrollLeft) {
+            stuckCount++;
+          } else {
+            stuckCount = 0;
+          }
+
+          lastScrollLeft = element.scrollLeft;
+          lastDeltaY = e.deltaY;
+          e.preventDefault();
+          element.scrollLeft += e.deltaY;
+        } else {
+          stuckCount = 0;
+          lastDeltaY = e.deltaY;
+        }
       }
+    };
+
+    const onDragStart = (e) => {
+      e.preventDefault();
     };
 
     element.addEventListener('mousedown', onMouseDown);
@@ -59,6 +94,7 @@ export function useDragScroll() {
     element.addEventListener('mousemove', onMouseMove);
     element.addEventListener('click', onClick, true);
     element.addEventListener('wheel', onWheel, { passive: false });
+    element.addEventListener('dragstart', onDragStart);
 
     return () => {
       element.removeEventListener('mousedown', onMouseDown);
@@ -67,6 +103,7 @@ export function useDragScroll() {
       element.removeEventListener('mousemove', onMouseMove);
       element.removeEventListener('click', onClick, true);
       element.removeEventListener('wheel', onWheel);
+      element.removeEventListener('dragstart', onDragStart);
     };
   }, []);
 
