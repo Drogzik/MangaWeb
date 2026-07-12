@@ -129,7 +129,7 @@ export default function AuthModal() {
             Нет аккаунта? <span className="auth-link" onClick={() => setAuthTab('register')}>Зарегистрироваться</span>
           </p>
           <p className="auth-divider">Или через</p>
-          <SocialButtons onGoogle={handleGoogleClick} onSocial={handleSocialStub} onTelegram={handleTelegramLogin} active={authTab === 'login'} />
+          <SocialButtons onGoogle={handleGoogleClick} onSocial={handleSocialStub} onTelegram={handleTelegramLogin} />
         </form>
 
         <form className={`auth-form${authTab === 'register' ? ' auth-form--active' : ''}`} onSubmit={onRegister}>
@@ -166,7 +166,7 @@ export default function AuthModal() {
             Уже есть аккаунт? <span className="auth-link" onClick={() => setAuthTab('login')}>Войти</span>
           </p>
           <p className="auth-divider">Или через</p>
-          <SocialButtons onGoogle={handleGoogleClick} onSocial={handleSocialStub} onTelegram={handleTelegramLogin} active={authTab === 'register'} />
+          <SocialButtons onGoogle={handleGoogleClick} onSocial={handleSocialStub} onTelegram={handleTelegramLogin} />
         </form>
 
         {authMessage.text && (

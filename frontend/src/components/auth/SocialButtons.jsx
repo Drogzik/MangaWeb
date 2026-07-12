@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24">
@@ -42,40 +42,32 @@ const providers = [
   { id: 'telegram', label: 'Telegram', Icon: TelegramIcon },
 ];
 
+const BOT_USERNAME = 'Mangaweb_DT_bot';
 
-const TelegramWidget = React.memo(({ onTelegram }) => {
-  const containerRef = useRef(null);
-  const onTelegramRef = useRef(onTelegram);
-  onTelegramRef.current = onTelegram;
-
+export default function SocialButtons({ onGoogle, onSocial, onTelegram }) {
+  // Listen for postMessage from Telegram auth popup
   useEffect(() => {
-    if (containerRef.current) {
-      window.onTelegramAuth = (user) => {
-        onTelegramRef.current(user);
-      };
-      const script = document.createElement('script');
-      // Append a cache-buster timestamp to force script re-evaluation upon remount
-      script.src = 'https://telegram.org/js/telegram-widget.js?22&t=' + Date.now();
-      script.setAttribute('data-telegram-login', 'Mangaweb_DT_bot'); // Your telegram bot username
-      script.setAttribute('data-size', 'medium');
-      script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-      script.setAttribute('data-request-access', 'write');
-      script.async = true;
-      containerRef.current.appendChild(script);
-
-      return () => {
-        if (containerRef.current) {
-          containerRef.current.innerHTML = '';
+    const handler = (e) => {
+      if (e.origin === 'https://oauth.telegram.org' && e.data && e.data.event === 'auth_result') {
+        if (e.data.result && onTelegram) {
+          onTelegram(e.data.result);
         }
-        delete window.onTelegramAuth;
-      };
-    }
-  }, []); // Run exactly once on mount
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, [onTelegram]);
 
-  return <div ref={containerRef} className="tg-widget-container" />;
-}, () => true); // Never re-render to prevent React from wiping out Telegram's iframe
+  const handleTelegramClick = useCallback(() => {
+    const botId = BOT_USERNAME;
+    const origin = window.location.origin;
+    const w = 550, h = 470;
+    const left = Math.round(window.screenX + (window.outerWidth - w) / 2);
+    const top = Math.round(window.screenY + (window.outerHeight - h) / 2);
+    const url = `https://oauth.telegram.org/auth?bot_id=${botId}&origin=${encodeURIComponent(origin)}&request_access=write&return_to=${encodeURIComponent(origin)}`;
+    window.open(url, 'telegram_auth', `width=${w},height=${h},left=${left},top=${top}`);
+  }, []);
 
-export default function SocialButtons({ onGoogle, onSocial, onTelegram, active }) {
   return (
     <div className="auth-social">
       <div className="auth-social__row">
@@ -92,40 +84,25 @@ export default function SocialButtons({ onGoogle, onSocial, onTelegram, active }
         ))}
       </div>
       <div className="auth-social__row auth-social__row--triple">
-        {providers.slice(2).map(({ id, label, Icon }) => {
-          if (id === 'telegram') {
-            if (!active) {
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  className="auth-social-btn"
-                  onClick={() => onSocial(id)}
-                >
-                  <span className="auth-social-btn__icon" aria-hidden="true"><Icon /></span>
-                  {label}
-                </button>
-              );
-            }
-            return (
-              <div key={id} className="auth-social-btn-wrapper" style={{ minWidth: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <TelegramWidget onTelegram={onTelegram} />
-              </div>
-            );
-          }
-          return (
-            <button
-              key={id}
-              type="button"
-              className="auth-social-btn"
-              onClick={() => onSocial(id)}
-            >
-              <span className="auth-social-btn__icon" aria-hidden="true"><Icon /></span>
-              {label}
-            </button>
-          );
-        })}
+        {providers.slice(2).map(({ id, label, Icon }) => (
+          <button
+            key={id}
+            type="button"
+            className="auth-social-btn"
+            onClick={() => {
+              if (id === 'telegram') {
+                handleTelegramClick();
+              } else {
+                onSocial(id);
+              }
+            }}
+          >
+            <span className="auth-social-btn__icon" aria-hidden="true"><Icon /></span>
+            {label}
+          </button>
+        ))}
       </div>
     </div>
   );
 }
+
