@@ -42,11 +42,11 @@ const providers = [
   { id: 'telegram', label: 'Telegram', Icon: TelegramIcon },
 ];
 
-export default function SocialButtons({ onGoogle, onSocial, onTelegram }) {
+export default function SocialButtons({ onGoogle, onSocial, onTelegram, active }) {
   const tgContainerRef = useRef(null);
 
   useEffect(() => {
-    if (tgContainerRef.current) {
+    if (active && tgContainerRef.current) {
       window.onTelegramAuth = (user) => {
         onTelegram(user);
       };
@@ -66,7 +66,7 @@ export default function SocialButtons({ onGoogle, onSocial, onTelegram }) {
         delete window.onTelegramAuth;
       };
     }
-  }, [onTelegram]);
+  }, [onTelegram, active]);
 
   return (
     <div className="auth-social">
@@ -86,6 +86,19 @@ export default function SocialButtons({ onGoogle, onSocial, onTelegram }) {
       <div className="auth-social__row auth-social__row--triple">
         {providers.slice(2).map(({ id, label, Icon }) => {
           if (id === 'telegram') {
+            if (!active) {
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  className="auth-social-btn"
+                  onClick={() => onSocial(id)}
+                >
+                  <span className="auth-social-btn__icon" aria-hidden="true"><Icon /></span>
+                  {label}
+                </button>
+              );
+            }
             return (
               <div key={id} className="auth-social-btn-wrapper" style={{ minWidth: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <div ref={tgContainerRef} className="tg-widget-container" />
