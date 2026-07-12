@@ -115,9 +115,12 @@ export function AuthProvider({ children }) {
 
   const handleTelegramLogin = useCallback(async (user) => {
     try {
+      console.log('[TG Auth] handleTelegramLogin called with:', JSON.stringify(user));
       const dbUser = await loginWithTelegram(user);
+      console.log('[TG Auth] Backend response:', JSON.stringify(dbUser));
       finishAuth(dbUser, 'Вход через Telegram выполнен.');
     } catch (err) {
+      console.error('[TG Auth] Backend error:', err);
       setAuthMessage({ text: err.message || 'Ошибка входа через Telegram.', type: 'error' });
     }
   }, [finishAuth]);
