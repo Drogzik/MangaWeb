@@ -45,27 +45,63 @@ const providers = [
 const BOT_ID = '8604912855';
 
 export default function SocialButtons({ onGoogle, onSocial, onTelegram }) {
-  // Listen for postMessage from Telegram auth popup
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.origin === 'https://oauth.telegram.org' && e.data && e.data.event === 'auth_result') {
-        if (e.data.result && onTelegram) {
-          onTelegram(e.data.result);
-        }
-      }
-    };
-    window.addEventListener('message', handler);
-    return () => window.removeEventListener('message', handler);
-  }, [onTelegram]);
-
   const handleTelegramClick = useCallback(() => {
     const origin = window.location.origin;
     const w = 550, h = 470;
     const left = Math.round(window.screenX + (window.outerWidth - w) / 2);
     const top = Math.round(window.screenY + (window.outerHeight - h) / 2);
     const url = `https://oauth.telegram.org/auth?bot_id=${BOT_ID}&origin=${encodeURIComponent(origin)}&request_access=write&return_to=${encodeURIComponent(origin)}`;
-    window.open(url, 'telegram_auth', `width=${w},height=${h},left=${left},top=${top}`);
-  }, []);
+    const popup = window.open(url, 'telegram_auth', `width=${w},height=${h},left=${left},top=${top}`);
+    
+    if (!popup) return;
+
+    // Poll the popup to detect when Telegram redirects back with auth data
+    const timer = setInterval(() => {
+      try {
+        if (popup.closed) {
+          clearInterval(timer);
+          return;
+        }
+        // When Telegram finishes auth, it redirects back to our origin with a hash fragment
+        if (popup.location.origin === origin) {
+          const hash = popup.location.hash;
+          if (hash) {
+            const params = new URLSearchParams(hash.substring(1));
+            const tgAuthResult = params.get('tgAuthResult');
+            if (tgAuthResult) {
+              popup.close();
+              clearInterval(timer);
+              try {
+                // tgAuthResult is base64url-encoded JSON
+                const decoded = atob(tgAuthResult.replace(/-/g, '+').replace(/_/g, '/'));
+                const userData = JSON.parse(decoded);
+                if (onTelegram) onTelegram(userData);
+              } catch (e) {
+                console.error('Failed to parse Telegram auth result', e);
+              }
+              return;
+            }
+          }
+          // If redirected to origin without hash, Telegram may put data in query
+          const search = popup.location.search;
+          if (search) {
+            const qp = new URLSearchParams(search);
+            const id = qp.get('id');
+            if (id) {
+              popup.close();
+              clearInterval(timer);
+              const userData = {};
+              for (const [k, v] of qp.entries()) userData[k] = v;
+              if (onTelegram) onTelegram(userData);
+              return;
+            }
+          }
+        }
+      } catch (e) {
+        // Cross-origin access will throw — that's expected while on telegram.org
+      }
+    }, 300);
+  }, [onTelegram]);
 
   return (
     <div className="auth-social">
