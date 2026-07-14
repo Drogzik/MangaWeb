@@ -4,6 +4,8 @@ export default function StarfieldCanvas() {
   const canvasRef = useRef(null);
   const constellationsRef = useRef([]);
 
+  // No need for shuffleArray anymore
+
   useEffect(() => {
     // Add cache buster so the browser always loads the fresh JSON without requiring a hard refresh
     fetch('/constellation_data.json?v=' + Date.now())
@@ -12,12 +14,12 @@ export default function StarfieldCanvas() {
         // Pre-calculate lines for performance to avoid O(N^2) in the draw loop
         data.forEach(c => {
           c.lines = [];
-          const maxDist = 0.012; 
+          const maxDistSq = 0.018 * 0.018; 
           for(let i=0; i<c.points.length; i++) {
             for(let j=i+1; j<c.points.length; j++) {
               const dx = c.points[i][0] - c.points[j][0];
               const dy = c.points[i][1] - c.points[j][1];
-              if (dx*dx + dy*dy < maxDist*maxDist) {
+              if (dx*dx + dy*dy < maxDistSq) {
                 c.lines.push([i, j]);
               }
             }
@@ -38,7 +40,10 @@ export default function StarfieldCanvas() {
     canvas.width = width;
     canvas.height = height;
 
-    const STAR_COUNT = 6000;
+    // Increased star count to 12000. 
+    // This provides enough density so the face can greedily consume 1500 local stars 
+    // without creating a dark void / empty space in the background.
+    const STAR_COUNT = 12000;
     
     // Initialize stars
     const stars = Array.from({ length: STAR_COUNT }, () => ({
@@ -67,7 +72,7 @@ export default function StarfieldCanvas() {
 
     const onMouseMove = (e) => {
       // If hovering over the modal form itself, disperse the constellation
-      if (e.target.closest('.auth-modal')) {
+      if (e.target.closest('.auth-modal') || e.target.closest('.auth-modal-overlay')) {
         isHovering = false;
         return;
       }
@@ -80,21 +85,26 @@ export default function StarfieldCanvas() {
 
       if (!isHovering) {
         isHovering = true;
-        // Pick a completely random character instead of sequential
-        activeData = dataArr[Math.floor(Math.random() * dataArr.length)];
+        activeData = dataArr[targetIndex % dataArr.length];
+        targetIndex++;
         cx = mouseX;
         cy = mouseY;
         
-        // Randomly pick stars from the entire background to avoid creating a dark void
-        stars.sort(() => Math.random() - 0.5);
+        // 1. Pick stars uniformly from the background to prevent any dark voids
+        shuffleArray(stars);
         
-        // Ensure fluid vertical morphing by sorting the chosen stars by Y coordinate
+        // 2. To prevent stars from crossing paths chaotically, sort them physically left-to-right,
+        // and sort the target points left-to-right. This creates a clean flowing animation.
         if (activeData && activeData.points) {
           const activeCount = activeData.points.length;
-          const activeStars = stars.slice(0, activeCount);
-          activeStars.sort((a, b) => a.y - b.y);
-          for (let i = 0; i < activeCount; i++) {
-            stars[i] = activeStars[i];
+          const chosenStars = stars.slice(0, activeCount);
+          chosenStars.sort((a, b) => a.x - b.x); // Sort stars by X
+          
+          const indices = Array.from({length: activeCount}, (_, i) => i);
+          indices.sort((i, j) => activeData.points[i][0] - activeData.points[j][0]); // Sort points by X
+          
+          for (let k = 0; k < activeCount; k++) {
+            stars[indices[k]] = chosenStars[k];
           }
         }
       } else {
@@ -102,22 +112,23 @@ export default function StarfieldCanvas() {
         const dist = Math.hypot(mouseX - cx, mouseY - cy);
         if (dist > 350) {
           assemblyPhase = 0.1; // Drops phase to hide lines and make it morph smoothly
-          // Pick a completely random character instead of sequential
-          activeData = dataArr[Math.floor(Math.random() * dataArr.length)];
+          activeData = dataArr[targetIndex % dataArr.length];
+          targetIndex++;
           cx = mouseX;
           cy = mouseY;
           
-          // Randomly pick stars from the entire background so the old face scatters
-          // and the new face assembles from all over the screen
-          stars.sort(() => Math.random() - 0.5);
+          shuffleArray(stars);
           
-          // Ensure fluid vertical morphing
           if (activeData && activeData.points) {
             const activeCount = activeData.points.length;
-            const activeStars = stars.slice(0, activeCount);
-            activeStars.sort((a, b) => a.y - b.y);
-            for (let i = 0; i < activeCount; i++) {
-              stars[i] = activeStars[i];
+            const chosenStars = stars.slice(0, activeCount);
+            chosenStars.sort((a, b) => a.x - b.x); // Sort stars by X
+            
+            const indices = Array.from({length: activeCount}, (_, i) => i);
+            indices.sort((i, j) => activeData.points[i][0] - activeData.points[j][0]); // Sort points by X
+            
+            for (let k = 0; k < activeCount; k++) {
+              stars[indices[k]] = chosenStars[k];
             }
           }
         }
@@ -159,7 +170,6 @@ export default function StarfieldCanvas() {
       // Drift the entire constellation to the left with the background
       if (activeData && isHovering) {
         cx -= constellationSpeed;
-        cx = (cx % width + width) % width; // Smoothly bound cx
         
         const size = Math.min(width, height) * 0.65;
         const aspect = activeData.aspect || 1;
@@ -171,12 +181,8 @@ export default function StarfieldCanvas() {
         // Dynamically update target coordinates so they move left
         for (let i = 0; i < stars.length; i++) {
           if (i < activeData.points.length) {
-            let tx = ox + activeData.points[i][0] * drawW;
-            let ty = oy + activeData.points[i][1] * drawH;
-            
-            // Seamless wrap for individual stars
-            stars[i].tx = (tx % width + width) % width;
-            stars[i].ty = ty;
+            stars[i].tx = ox + activeData.points[i][0] * drawW;
+            stars[i].ty = oy + activeData.points[i][1] * drawH;
           } else {
             stars[i].tx = stars[i].baseX;
             stars[i].ty = stars[i].baseY;
@@ -203,32 +209,26 @@ export default function StarfieldCanvas() {
           let dx = s.tx - s.x;
           let dy = s.ty - s.y;
           
-          // Shortest path interpolation to handle seamless wrapping
-          // Only do this when the face is mostly assembled, otherwise background stars
-          // will glitch and teleport across the screen when first flying in!
-          if (assemblyPhase > 0.8) {
-            if (dx > width * 0.5) {
-              s.x += width;
-              dx = s.tx - s.x;
-            } else if (dx < -width * 0.5) {
-              s.x -= width;
-              dx = s.tx - s.x;
-            }
+          if (s.tx !== undefined && s.ty !== undefined) {
+            // Временно убираем рандом (по просьбе из 16:05)
+            s.x = s.tx;
+            s.y = s.ty;
+            s.vx = 0;
+            s.vy = 0;
+          } else {         
+            // Maximally simple and smooth easing (no bounce, no spring twitching)
+            s.x += dx * 0.15;
+            s.y += dy * 0.15;
+            s.vx = 0;
+            s.vy = 0;
           }
-          
-          // Maximally simple and smooth easing (no bounce, no twitching)
-          s.x += dx * 0.25;
-          s.y += dy * 0.25;
-          s.vx = 0;
-          s.vy = 0;
         } else {
           // If star wrapped around screen, snap immediately so it doesn't fly across
           if (Math.abs(s.x - s.baseX) > width * 0.5) {
             s.x = s.baseX;
             s.y = s.baseY;
           }
-          // Smoothly dissolve back to background
-          s.x += (s.baseX - s.x) * 0.25; 
+          s.x += (s.baseX - s.x) * 0.25; // Scatter back to background much faster
           s.y += (s.baseY - s.y) * 0.25;
           s.vx = 0;
           s.vy = 0;
@@ -240,11 +240,10 @@ export default function StarfieldCanvas() {
         const alpha = s.brightness * tw + faceGlow;
 
         ctx.beginPath();
-        // Slightly enlarge the stars that make up the face
-        const radiusMult = 1 + (isFaceStar ? assemblyPhase * 1.0 : assemblyPhase * 0.2);
-        ctx.arc(s.x, s.y, s.radius * radiusMult, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(220, 230, 255, ${Math.min(1, Math.max(0, alpha))})`;
-        ctx.fill();
+        const radiusMult = 1 + (isFaceStar ? assemblyPhase * 0.8 : assemblyPhase * 0.2);
+        const r = s.radius * radiusMult;
+        ctx.fillStyle = `rgba(220, 230, 255, ${Math.min(1, alpha)})`;
+        ctx.fillRect(s.x - r, s.y - r, r * 2, r * 2);
       }
 
       // 2. Draw connective lines ONLY when assembled
@@ -261,16 +260,35 @@ export default function StarfieldCanvas() {
           const dist2 = Math.abs(s2.x - s2.tx) + Math.abs(s2.y - s2.ty);
           
           if (dist1 < 30 && dist2 < 30) {
-            // Prevent drawing lines across the entire screen when wrapped
-            if (Math.abs(s1.x - s2.x) < width * 0.5) {
-              ctx.beginPath();
-              ctx.moveTo(s1.x, s1.y);
-              ctx.lineTo(s2.x, s2.y);
-              // Added a subtle magical blue/purple glow to the lines to make them look better
-              ctx.strokeStyle = `rgba(160, 190, 255, ${assemblyPhase * 0.25})`; 
-              ctx.lineWidth = 0.5;
-              ctx.stroke();
+            // Calculate center of the constellation for vignette
+            const cx_draw = cx;
+            const cy_draw = cy;
+            
+            // Average position of the two stars forming the line
+            const midX = (s1.x + s2.x) / 2;
+            const midY = (s1.y + s2.y) / 2;
+            
+            // Normalize distance from center
+            const size = Math.min(width, height) * 0.65;
+            const drawW = size * (activeData.aspect || 1);
+            const drawH = size;
+            
+            const nx = (midX - cx_draw) / (drawW / 2);
+            const ny = (midY - cy_draw) / (drawH / 2);
+            const distFromCenter = Math.sqrt(nx*nx + ny*ny);
+            
+            // Vignette: start fading out at 0.7 distance, completely invisible at 1.0
+            let vignette = 1.0;
+            if (distFromCenter > 0.7) {
+              vignette = Math.max(0, 1.0 - (distFromCenter - 0.7) * 3.33); // 1.0 to 0.0 over 0.3 distance
             }
+            
+            ctx.beginPath();
+            ctx.moveTo(s1.x, s1.y);
+            ctx.lineTo(s2.x, s2.y);
+            ctx.strokeStyle = `rgba(180, 210, 255, ${assemblyPhase * 0.4 * vignette})`; 
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
           }
         }
         ctx.globalAlpha = 1.0;
