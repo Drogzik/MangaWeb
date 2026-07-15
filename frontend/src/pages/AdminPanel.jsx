@@ -289,158 +289,139 @@ export default function AdminPanel() {
             {success && <div className={styles.success}>{success}</div>}
 
             <form className={styles.form} onSubmit={handleSubmit}>
-              <div className={styles.formGrid}>
-                {/* Left Column */}
-                <div className={styles.formColumn}>
-                  <div className={styles.formGroup}>
-                    <label>Название *</label>
-                    <input required name="title" value={formData.title} onChange={handleChange} placeholder="Например: One Piece" />
-                  </div>
-                  
-                  <div className={styles.formGroup}>
-                    <label>Автор *</label>
-                    <input required name="author" value={formData.author} onChange={handleChange} placeholder="Например: Эйитиро Ода" />
-                  </div>
+              
+              <div className={styles.formGroup}>
+                <label>Название *</label>
+                <input required name="title" value={formData.title} onChange={handleChange} placeholder="Например: Игрок скрывает прошлое" />
+              </div>
 
-                  <div className={styles.formGroup}>
-                    <label>Главный герой (ГГ)</label>
-                    <input name="mainCharacter" value={formData.mainCharacter} onChange={handleChange} placeholder="Например: Монки Д. Луффи" />
-                  </div>
+              <div className={styles.row}>
+                <div className={styles.formGroup}>
+                  <label>Автор *</label>
+                  <input required name="author" value={formData.author} onChange={handleChange} placeholder="Автор или студия" />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Главный герой (ГГ)</label>
+                  <input name="mainCharacter" value={formData.mainCharacter} onChange={handleChange} placeholder="Имя ГГ" />
+                </div>
+              </div>
 
-                  <div className={styles.formGroup} style={{flex: 1}}>
-                    <label>Описание</label>
-                    <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Коротко о сюжете..." style={{height: '100%', minHeight: '120px'}} />
+              <div className={styles.formGroup}>
+                <label>Описание</label>
+                <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Коротко о сюжете..." rows="2" />
+              </div>
+
+              <div className={styles.row}>
+                <div className={styles.formGroup}>
+                  <label>Количество глав</label>
+                  <div className={styles.numberInputWrapper}>
+                    <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, chapters: Math.max(0, parseInt(prev.chapters || 0) - 1)}))}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                    <input type="number" name="chapters" value={formData.chapters} onChange={handleChange} min="0" className={styles.numberInput} />
+                    <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, chapters: parseInt(prev.chapters || 0) + 1}))}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
                   </div>
                 </div>
-
-                {/* Right Column */}
-                <div className={styles.formColumn}>
-                  <div className={styles.row}>
-                    <div className={styles.formGroup}>
-                      <label>Количество глав</label>
-                      <div className={styles.numberInputWrapper}>
-                        <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, chapters: Math.max(0, parseInt(prev.chapters || 0) - 1)}))}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        </button>
-                        <input type="number" name="chapters" value={formData.chapters} onChange={handleChange} min="0" className={styles.numberInput} />
-                        <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, chapters: parseInt(prev.chapters || 0) + 1}))}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        </button>
-                      </div>
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label>Рейтинг (0-5)</label>
-                      <div className={styles.numberInputWrapper}>
-                        <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, rating: Math.max(0, (parseFloat(prev.rating || 0) - 0.1).toFixed(1))}))}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        </button>
-                        <input type="number" name="rating" value={formData.rating} onChange={handleChange} min="0" max="5" step="0.1" className={styles.numberInput} />
-                        <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, rating: Math.min(5, (parseFloat(prev.rating || 0) + 0.1).toFixed(1))}))}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>URL обложки</label>
-                    <input name="cover" value={formData.cover} onChange={handleChange} placeholder="https://example.com/cover.jpg" />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>Выбранные жанры *</label>
-                    <div 
-                      className={styles.tagsWrapper} 
-                      onClick={(e) => {
-                        if (e.target.closest('button')) return;
-                        const input = e.currentTarget.querySelector('input[name="customGenreInput"]');
-                        if (input) input.focus();
-                        setIsGenrePanelOpen(true);
-                      }}
-                      style={{ cursor: 'text' }}
-                    >
-                      {formData.genres.map(genre => (
-                        <span key={genre} className={styles.tag}>
-                          {genre}
-                          <button type="button" onClick={() => handleRemoveGenre(genre)}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                          </button>
-                        </span>
-                      ))}
-                      <div style={{ flex: 1, minWidth: '130px' }}>
-                        <input 
-                          type="text"
-                          name="customGenreInput" 
-                          value={customGenreInput} 
-                          onChange={e => setCustomGenreInput(e.target.value)} 
-                          onKeyDown={handleCustomGenreKeyDown}
-                          placeholder="Вписать свой..."
-                          className={styles.tagInput}
-                        />
-                      </div>
-                      <button 
-                        type="button" 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          const trimmed = customGenreInput.trim();
-                          if (trimmed && !formData.genres.includes(trimmed)) {
-                            setFormData(prev => ({ ...prev, genres: [...prev.genres, trimmed] }));
-                            setCustomGenreInput('');
-                          } else if (!trimmed) {
-                            setIsGenrePanelOpen(!isGenrePanelOpen);
-                          }
-                        }} 
-                        className={styles.tagAddBtn}
-                        style={{
-                          transform: isGenrePanelOpen && !customGenreInput.trim() ? 'rotate(45deg)' : 'none',
-                          transition: 'transform 0.2s'
-                        }}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>Загрузка архива (ZIP/RAR)</label>
-                    <div 
-                      className={`${styles.uploadZone} ${isDragOver ? styles.uploadZoneDragOver : ''}`}
-                      onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
-                      onDragLeave={(e) => { e.preventDefault(); setIsDragOver(false); }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        setIsDragOver(false);
-                        const file = e.dataTransfer.files[0];
-                        if (file && (file.name.endsWith('.zip') || file.name.endsWith('.rar'))) {
-                          setUploadedArchive(file);
-                        } else {
-                          alert('Пожалуйста, загрузите файл .zip или .rar');
-                        }
-                      }}
-                      onClick={() => document.getElementById('archiveInput').click()}
-                    >
-                      <input 
-                        type="file" 
-                        id="archiveInput" 
-                        accept=".zip,.rar" 
-                        style={{display: 'none'}} 
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (file) setUploadedArchive(file);
-                        }}
-                      />
-                      <svg className={styles.uploadIcon} width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                      {uploadedArchive ? (
-                        <span className={styles.uploadTextHighlight}>{uploadedArchive.name}</span>
-                      ) : (
-                        <span className={styles.uploadText}>Перетащите архив сюда или <span className={styles.uploadTextHighlight}>выберите файл</span></span>
-                      )}
-                    </div>
+                <div className={styles.formGroup}>
+                  <label>Рейтинг (0-5)</label>
+                  <div className={styles.numberInputWrapper}>
+                    <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, rating: Math.max(0, (parseFloat(prev.rating || 0) - 0.1).toFixed(1))}))}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                    <input type="number" name="rating" value={formData.rating} onChange={handleChange} min="0" max="5" step="0.1" className={styles.numberInput} />
+                    <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, rating: Math.min(5, (parseFloat(prev.rating || 0) + 0.1).toFixed(1))}))}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
                   </div>
                 </div>
               </div>
 
-              <button type="submit" className={styles.submitBtn} disabled={loading} style={{marginTop: 'auto', marginBottom: '16px'}}>
+              <div className={styles.row}>
+                <div className={styles.formGroup} style={{flex: 1.5}}>
+                  <label>Жанры *</label>
+                  <div 
+                    className={styles.tagsWrapper} 
+                    onClick={(e) => {
+                      if (e.target.closest('button')) return;
+                      const input = e.currentTarget.querySelector('input[name="customGenreInput"]');
+                      if (input) input.focus();
+                      setIsGenrePanelOpen(true);
+                    }}
+                    style={{ cursor: 'text' }}
+                  >
+                    {formData.genres.map(genre => (
+                      <span key={genre} className={styles.tag}>
+                        {genre}
+                        <button type="button" onClick={() => handleRemoveGenre(genre)}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                      </span>
+                    ))}
+                    <div style={{ flex: 1, minWidth: '100px' }}>
+                      <input 
+                        type="text"
+                        name="customGenreInput" 
+                        value={customGenreInput} 
+                        onChange={e => setCustomGenreInput(e.target.value)} 
+                        onKeyDown={handleCustomGenreKeyDown}
+                        placeholder="Добавить..."
+                        className={styles.tagInput}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className={styles.formGroup} style={{flex: 1}}>
+                  <label>URL обложки</label>
+                  <input name="cover" value={formData.cover} onChange={handleChange} placeholder="https://.../cover.jpg" />
+                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Загрузка архива (ZIP/RAR)</label>
+                <div 
+                  className={`${styles.uploadZone} ${isDragOver ? styles.uploadZoneDragOver : ''}`}
+                  onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                  onDragLeave={(e) => { e.preventDefault(); setIsDragOver(false); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragOver(false);
+                    const file = e.dataTransfer.files[0];
+                    if (file && (file.name.endsWith('.zip') || file.name.endsWith('.rar'))) {
+                      setUploadedArchive(file);
+                    } else {
+                      alert('Пожалуйста, загрузите файл .zip или .rar');
+                    }
+                  }}
+                  onClick={() => document.getElementById('archiveInput').click()}
+                >
+                  <input 
+                    type="file" 
+                    id="archiveInput" 
+                    accept=".zip,.rar" 
+                    style={{display: 'none'}} 
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) setUploadedArchive(file);
+                    }}
+                  />
+                  {uploadedArchive ? (
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                      <svg className={styles.uploadIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                      <span className={styles.uploadTextHighlight}>{uploadedArchive.name}</span>
+                    </div>
+                  ) : (
+                    <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                      <svg className={styles.uploadIcon} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                      <span className={styles.uploadText}>Перетащите архив сюда или <span className={styles.uploadTextHighlight}>выберите файл</span></span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <button type="submit" className={styles.submitBtn} disabled={loading} style={{marginTop: 'auto'}}>
                 {loading ? 'Добавление...' : 'Сохранить мангу'}
               </button>
             </form>
