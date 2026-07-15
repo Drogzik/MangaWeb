@@ -679,7 +679,7 @@ export default function SettingsPage() {
         )}
 
         {/* Placeholder for other tabs */}
-        {activeTab !== 'personal' && activeTab !== 'appearance' && activeTab !== 'notifications' && activeTab !== 'filters' && (
+        {activeTab !== 'personal' && activeTab !== 'appearance' && activeTab !== 'notifications' && activeTab !== 'filters' && activeTab !== 'site' && (
           <div className={styles.placeholderTab}>
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <p>Раздел "{TABS.find(t => t.id === activeTab)?.label}" в разработке</p>
@@ -828,49 +828,48 @@ export default function SettingsPage() {
         )}
 
         {activeTab === 'site' && (
-          <div className={styles.section}>
-            <h2>Настройки сайта</h2>
+          <div>
+            <h2 className={styles.sectionTitle}>Настройки сайта</h2>
+            <p className={styles.appearanceNote} style={{marginBottom: '24px'}}>Общие настройки отображения и поведения сайта</p>
             
-            <div className={styles.inputGroup}>
-              <label>Язык интерфейса</label>
-              <select className={styles.select}>
-                <option value="ru">Русский</option>
-                <option value="en">English</option>
-              </select>
-            </div>
+            <div className={styles.settingsSectionLabel}>Интерфейс</div>
             
-            <div className={styles.inputGroup}>
-              <label>Тема сайта</label>
-              <select className={styles.select}>
-                <option value="dark">Тёмная (По умолчанию)</option>
-                <option value="light">Светлая</option>
-                <option value="system">Системная</option>
-              </select>
-            </div>
-            
-            <div className={styles.settingsRow}>
-              <div className={styles.settingsRowInfo}>
-                <h3>Безопасный режим</h3>
-                <p>Скрывать контент 18+ и сцены жестокости (NSFW)</p>
+            <div className={styles.toggleWrapper}>
+              <div className={styles.toggleInfo}>
+                <span className={styles.toggleTitle}>Компактный вид каталога</span>
+                <span className={styles.toggleDesc}>Отображать больше элементов на экране за счет уменьшения обложек</span>
               </div>
-              <label className={styles.toggle}>
-                <input type="checkbox" defaultChecked />
-                <span className={styles.slider}></span>
-              </label>
-            </div>
-            
-            <div className={styles.settingsRow}>
-              <div className={styles.settingsRowInfo}>
-                <h3>Компактный вид каталога</h3>
-                <p>Отображать больше элементов на экране за счет уменьшения обложек</p>
-              </div>
-              <label className={styles.toggle}>
+              <label className={styles.toggleSwitch}>
                 <input type="checkbox" />
-                <span className={styles.slider}></span>
+                <span className={styles.toggleSlider}></span>
+              </label>
+            </div>
+
+            <div className={styles.toggleWrapper}>
+              <div className={styles.toggleInfo}>
+                <span className={styles.toggleTitle}>Отключить анимации</span>
+                <span className={styles.toggleDesc}>Убрать плавные переходы и анимации интерфейса для ускорения работы</span>
+              </div>
+              <label className={styles.toggleSwitch}>
+                <input type="checkbox" />
+                <span className={styles.toggleSlider}></span>
+              </label>
+            </div>
+
+            <div className={styles.settingsSectionLabel}>Контент</div>
+            
+            <div className={styles.toggleWrapper}>
+              <div className={styles.toggleInfo}>
+                <span className={styles.toggleTitle}>Безопасный режим</span>
+                <span className={styles.toggleDesc}>Скрывать контент 18+ и сцены жестокости (NSFW)</span>
+              </div>
+              <label className={styles.toggleSwitch}>
+                <input type="checkbox" defaultChecked />
+                <span className={styles.toggleSlider}></span>
               </label>
             </div>
             
-            <div className={styles.actions}>
+            <div style={{marginTop: '24px'}}>
               <button className={styles.btnPrimary} onClick={handleSaveProfile}>Сохранить настройки</button>
             </div>
           </div>
