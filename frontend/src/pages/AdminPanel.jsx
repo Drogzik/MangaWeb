@@ -30,7 +30,7 @@ export default function AdminPanel() {
 
   // Bot Chat State
   const [botMessages, setBotMessages] = useState([
-    { role: 'bot', text: 'Привет! Я твой ИИ-помощник. Напиши мне ссылку на мангу или ее название, и я сам найду всю информацию (автора, описание, обложку) и добавлю ее в каталог.' }
+    { role: 'bot', text: 'Привет! Я бот-помощник. Напиши мне название манги, и я сам найду описание, жанры и главных персонажей, а затем добавлю их в каталог.' }
   ]);
   const [botInput, setBotInput] = useState('');
 
@@ -134,11 +134,11 @@ export default function AdminPanel() {
     const currentInput = botInput;
     setBotInput('');
 
-    // Simulate bot thinking and responding
+    // Simulate bot parsing manga info
     setTimeout(() => {
       setBotMessages(prev => [...prev, { 
         role: 'bot', 
-        text: `Я получил запрос на добавление "${currentInput}". Сейчас модуль ИИ работает в режиме демо, поэтому парсинг не выполнен, но скоро я научусь делать это по-настоящему!` 
+        text: `Манга "${currentInput}" найдена!\n\nОписание: Это эпическая история о захватывающих приключениях и преодолении преград.\nЖанры: Сёнен, Экшен, Приключения\nГлавные персонажи: Протагонист, его верный друг и загадочный наставник.\n\nЗаполняю форму и добавляю в каталог...`
       }]);
     }, 1000);
   };
@@ -158,7 +158,7 @@ export default function AdminPanel() {
           <div>
             <h1 className={styles.title}>Панель для манги</h1>
             <p className={styles.subtitle}>
-              {viewMode === 'manual' ? 'Ручное добавление в каталог' : 'ИИ-ассистент добавления'}
+              {viewMode === 'manual' ? 'Ручное добавление в каталог' : 'Бот-помощник'}
             </p>
           </div>
 
