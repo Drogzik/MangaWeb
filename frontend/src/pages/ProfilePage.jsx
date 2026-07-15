@@ -131,7 +131,7 @@ export default function ProfilePage() {
             <img src={selectedAvatar} alt="Avatar" className={styles.avatarImg} />
             {selectedFrame && selectedFrame !== 'none' && (
               <img 
-                src={selectedFrame.split('?')[0] + '?v=7'} 
+                src={selectedFrame.split('?')[0] + '?v=9'} 
                 alt="Frame" 
                 className={`${styles.frameImg} ${selectedFrame.includes('frame_3') ? styles.animFan : ''} ${selectedFrame.includes('frame_4') ? styles.animHat : ''}`} 
               />

@@ -932,38 +932,38 @@
 
 /* Animations for specific frames */
 .animFan {
-  width: 100px !important;
-  height: 100px !important;
+  width: 140px !important;
+  height: 140px !important;
   top: auto !important;
-  bottom: -20px !important;
+  bottom: -45px !important;
   left: auto !important;
-  right: -20px !important;
-  transform: none !important;
-  transform-origin: center;
+  right: -45px !important;
+  transform: translate(0, 0);
+  transform-origin: 30% 70%;
   animation: fanWave 4s ease-in-out infinite;
 }
 
 @keyframes fanWave {
-  0% { transform: rotate(0deg); }
-  50% { transform: rotate(-15deg); }
-  100% { transform: rotate(0deg); }
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(0, 0) rotate(-20deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
 }
 
 .animHat {
-  width: 100px !important;
-  height: 100px !important;
-  top: -20px !important;
+  width: 120px !important;
+  height: 120px !important;
+  top: -30px !important;
   bottom: auto !important;
   left: auto !important;
-  right: -20px !important;
-  transform: none !important;
+  right: -30px !important;
+  transform: translate(0, 0);
   transform-origin: center;
   animation: hatTwitch 4s ease-in-out infinite;
 }
 
 @keyframes hatTwitch {
-  0%, 85%, 100% { transform: rotate(0deg) scale(1); }
-  88% { transform: rotate(5deg) scale(1.05); }
-  92% { transform: rotate(-5deg) scale(0.95); }
-  96% { transform: rotate(3deg) scale(1.02); }
+  0%, 85%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  88% { transform: translate(0, 0) rotate(8deg) scale(1.1); }
+  92% { transform: translate(0, 0) rotate(-8deg) scale(0.9); }
+  96% { transform: translate(0, 0) rotate(4deg) scale(1.05); }
 }
