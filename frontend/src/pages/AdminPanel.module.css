@@ -12,9 +12,9 @@
 /* Main Container */
 .container {
   width: 100%;
-  max-width: 700px;
+  max-width: 1000px;
   height: 90%;
-  max-height: 800px;
+  max-height: 850px;
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -33,7 +33,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 32px 32px 24px 32px;
+  padding: 24px 32px 16px 32px;
   position: relative;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -127,11 +127,10 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  height: 100%;
+  margin-top: 16px;
   overflow-y: auto;
   padding-right: 8px;
-  flex: 1;
-  margin-top: 24px;
 }
 
 .form::-webkit-scrollbar {
@@ -140,6 +139,55 @@
 .form::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 6px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  flex: 1;
+}
+
+.formColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.uploadZone {
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 120px;
+}
+
+.uploadZone:hover, .uploadZoneDragOver {
+  border-color: var(--accent, #6366f1);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.uploadIcon {
+  color: var(--accent, #818cf8);
+  margin-bottom: 4px;
+}
+
+.uploadText {
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-align: center;
+}
+
+.uploadTextHighlight {
+  color: var(--accent, #818cf8);
+  font-weight: 600;
 }
 
 .formGroup {

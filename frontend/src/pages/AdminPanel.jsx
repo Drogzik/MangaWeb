@@ -13,12 +13,16 @@ export default function AdminPanel() {
   const [formData, setFormData] = useState({
     title: '',
     author: '',
+    mainCharacter: '',
     description: '',
     cover: '',
     rating: 0,
     chapters: 0,
     genres: []
   });
+
+  const [uploadedArchive, setUploadedArchive] = useState(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const [searchGenreInput, setSearchGenreInput] = useState('');
   const [customGenreInput, setCustomGenreInput] = useState('');
@@ -113,12 +117,14 @@ export default function AdminPanel() {
       setFormData({
         title: '',
         author: '',
+        mainCharacter: '',
         description: '',
         cover: '',
         rating: 0,
         chapters: 0,
         genres: []
       });
+      setUploadedArchive(null);
       setCustomGenreInput('');
       setSearchGenreInput('');
     } catch (err) {
@@ -136,7 +142,6 @@ export default function AdminPanel() {
     const currentInput = botInput.trim();
     setBotInput('');
 
-    // Добавляем сообщение о поиске
     setBotMessages(prev => [...prev, { 
       role: 'bot', 
       text: `Ищу информацию по "${currentInput}" на внешних базах данных (Shikimori)... ⏳`
@@ -162,25 +167,29 @@ export default function AdminPanel() {
 
         const title = data.russian || data.name;
         
-        // Очищаем BBCode-теги Shikimori
         let desc = data.description;
         if (desc) {
           desc = desc.replace(/\[\/?(i|b|spoiler|character|person|anime|manga|url)[^\]]*\]/gi, '');
         }
 
-        // Умный фоллбэк для отсутствующих данных
         const FALLBACK_DATA = {
           'Игрок скрывает прошлое': {
             description: 'VR-игра «История континента Аркана» внезапно материализуется в реальном мире. Обычный офисный работник Ли Хо Ёль оказывается в теле своего игрового персонажа, которого создал в школе — высокопарного и пафосного Грандфелла Клауди Арфея Ромео. Теперь ему приходится отыгрывать эту нелепую роль сквозь жгучий стыд, ведь его персонаж — последний легендарный охотник на демонов!',
-            genres: ['Сёнен', 'Экшен', 'Фэнтези', 'Исекай', 'Комедия']
+            genres: ['Сёнен', 'Экшен', 'Фэнтези', 'Исекай', 'Комедия', 'Магия', 'Система', 'ГГ мужчина', 'Умный ГГ', 'Игровые элементы'],
+            author: 'Badass / Gaechaban',
+            mainCharacter: 'Ли Хо Ёль (Грандфелл)'
           },
           'Поднятие уровня в одиночку': {
             description: 'Слабейший охотник Е-ранга получает уникальную способность интерфейса Игрока, позволяющую ему бесконечно повышать свой уровень.',
-            genres: ['Сёнен', 'Экшен', 'Фэнтези', 'Сверхъестественное']
+            genres: ['Сёнен', 'Экшен', 'Фэнтези', 'Сверхъестественное', 'Система', 'ГГ имба'],
+            author: 'Chugong',
+            mainCharacter: 'Сон Джин У'
           }
         };
 
         let finalDesc = desc && desc.trim().length > 0 ? desc : null;
+        let finalAuthor = '';
+        let finalMC = '';
         let apiGenres = data.genres ? data.genres.map(g => g.russian || g.name) : [];
         let finalGenres = [...apiGenres];
         
@@ -189,18 +198,19 @@ export default function AdminPanel() {
         if (fallbackKey) {
            const fallback = FALLBACK_DATA[fallbackKey];
            if (!finalDesc) finalDesc = fallback.description;
+           finalAuthor = fallback.author;
+           finalMC = fallback.mainCharacter;
            
-           // Добавляем фоллбэк-жанры, которых нет в API
            fallback.genres.forEach(g => {
              if (!finalGenres.includes(g)) finalGenres.push(g);
            });
         }
         
         if (!finalDesc) {
-           finalDesc = 'К сожалению, на Шикимори пока нет описания для этой манги, но я собрал для вас все остальные данные (жанры, рейтинг, главы)!';
+           finalDesc = 'К сожалению, на Шикимори пока нет описания для этой манги, но я собрал для вас все остальные данные!';
         }
 
-        const score = data.score ? (parseFloat(data.score) / 2).toFixed(1) : 0; // Shikimori 10-балльная шкала -> 5 балльная
+        const score = data.score ? (parseFloat(data.score) / 2).toFixed(1) : 0;
         const chapters = data.chapters || data.volumes || 0;
         const coverUrl = data.image ? `https://shikimori.one${data.image.original}` : '';
         
@@ -208,14 +218,15 @@ export default function AdminPanel() {
           ...prev.slice(0, prev.length - 1),
           { 
             role: 'bot', 
-            text: `Манга "${title}" найдена!\n\nОписание: ${finalDesc.substring(0, 200)}...\nЖанры: ${finalGenres.join(', ')}\n\nЯ заполнил форму. Проверьте данные и сохраните!`
+            text: `Манга "${title}" найдена!\n\nАвтор: ${finalAuthor || 'Неизвестно'}\nГГ: ${finalMC || 'Неизвестно'}\nОписание: ${finalDesc.substring(0, 150)}...\nЖанры: ${finalGenres.join(', ')}\n\nЯ заполнил форму. Проверьте данные и сохраните!`
           }
         ]);
         
-        // Auto-fill form
         setFormData(prev => ({
           ...prev,
           title: title,
+          author: finalAuthor,
+          mainCharacter: finalMC,
           description: finalDesc,
           rating: score,
           chapters: chapters,
@@ -278,110 +289,158 @@ export default function AdminPanel() {
             {success && <div className={styles.success}>{success}</div>}
 
             <form className={styles.form} onSubmit={handleSubmit}>
-              <div className={styles.formGroup}>
-                <label>Название *</label>
-                <input required name="title" value={formData.title} onChange={handleChange} placeholder="Например: One Piece" />
-              </div>
-              
-              <div className={styles.formGroup}>
-                <label>Автор *</label>
-                <input required name="author" value={formData.author} onChange={handleChange} placeholder="Например: Эйитиро Ода" />
-              </div>
+              <div className={styles.formGrid}>
+                {/* Left Column */}
+                <div className={styles.formColumn}>
+                  <div className={styles.formGroup}>
+                    <label>Название *</label>
+                    <input required name="title" value={formData.title} onChange={handleChange} placeholder="Например: One Piece" />
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label>Автор *</label>
+                    <input required name="author" value={formData.author} onChange={handleChange} placeholder="Например: Эйитиро Ода" />
+                  </div>
 
-              <div className={styles.formGroup}>
-                <label>Описание & Персонажи</label>
-                <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Коротко о сюжете..." rows="3" />
-              </div>
+                  <div className={styles.formGroup}>
+                    <label>Главный герой (ГГ)</label>
+                    <input name="mainCharacter" value={formData.mainCharacter} onChange={handleChange} placeholder="Например: Монки Д. Луффи" />
+                  </div>
 
-              <div className={styles.row}>
-                <div className={styles.formGroup}>
-                  <label>Количество глав</label>
-                  <div className={styles.numberInputWrapper}>
-                    <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, chapters: Math.max(0, parseInt(prev.chapters || 0) - 1)}))}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    </button>
-                    <input type="number" name="chapters" value={formData.chapters} onChange={handleChange} min="0" className={styles.numberInput} />
-                    <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, chapters: parseInt(prev.chapters || 0) + 1}))}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    </button>
+                  <div className={styles.formGroup} style={{flex: 1}}>
+                    <label>Описание</label>
+                    <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Коротко о сюжете..." style={{height: '100%', minHeight: '120px'}} />
                   </div>
                 </div>
-                <div className={styles.formGroup}>
-                  <label>Рейтинг (0-5)</label>
-                  <div className={styles.numberInputWrapper}>
-                    <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, rating: Math.max(0, (parseFloat(prev.rating || 0) - 0.1).toFixed(1))}))}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    </button>
-                    <input type="number" name="rating" value={formData.rating} onChange={handleChange} min="0" max="5" step="0.1" className={styles.numberInput} />
-                    <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, rating: Math.min(5, (parseFloat(prev.rating || 0) + 0.1).toFixed(1))}))}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
 
-              <div className={styles.formGroup}>
-                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                  <label>Выбранные жанры *</label>
-                </div>
-                <div 
-                  className={styles.tagsWrapper} 
-                  onClick={(e) => {
-                    if (e.target.closest('button')) return;
-                    const input = e.currentTarget.querySelector('input[name="customGenreInput"]');
-                    if (input) input.focus();
-                    setIsGenrePanelOpen(true);
-                  }}
-                  style={{ cursor: 'text' }}
-                >
-                  {formData.genres.map(genre => (
-                    <span key={genre} className={styles.tag}>
-                      {genre}
-                      <button type="button" onClick={() => handleRemoveGenre(genre)}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                {/* Right Column */}
+                <div className={styles.formColumn}>
+                  <div className={styles.row}>
+                    <div className={styles.formGroup}>
+                      <label>Количество глав</label>
+                      <div className={styles.numberInputWrapper}>
+                        <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, chapters: Math.max(0, parseInt(prev.chapters || 0) - 1)}))}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        </button>
+                        <input type="number" name="chapters" value={formData.chapters} onChange={handleChange} min="0" className={styles.numberInput} />
+                        <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, chapters: parseInt(prev.chapters || 0) + 1}))}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Рейтинг (0-5)</label>
+                      <div className={styles.numberInputWrapper}>
+                        <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, rating: Math.max(0, (parseFloat(prev.rating || 0) - 0.1).toFixed(1))}))}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        </button>
+                        <input type="number" name="rating" value={formData.rating} onChange={handleChange} min="0" max="5" step="0.1" className={styles.numberInput} />
+                        <button type="button" className={styles.numBtn} onClick={() => setFormData(prev => ({...prev, rating: Math.min(5, (parseFloat(prev.rating || 0) + 0.1).toFixed(1))}))}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label>URL обложки</label>
+                    <input name="cover" value={formData.cover} onChange={handleChange} placeholder="https://example.com/cover.jpg" />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label>Выбранные жанры *</label>
+                    <div 
+                      className={styles.tagsWrapper} 
+                      onClick={(e) => {
+                        if (e.target.closest('button')) return;
+                        const input = e.currentTarget.querySelector('input[name="customGenreInput"]');
+                        if (input) input.focus();
+                        setIsGenrePanelOpen(true);
+                      }}
+                      style={{ cursor: 'text' }}
+                    >
+                      {formData.genres.map(genre => (
+                        <span key={genre} className={styles.tag}>
+                          {genre}
+                          <button type="button" onClick={() => handleRemoveGenre(genre)}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                          </button>
+                        </span>
+                      ))}
+                      <div style={{ flex: 1, minWidth: '130px' }}>
+                        <input 
+                          type="text"
+                          name="customGenreInput" 
+                          value={customGenreInput} 
+                          onChange={e => setCustomGenreInput(e.target.value)} 
+                          onKeyDown={handleCustomGenreKeyDown}
+                          placeholder="Вписать свой..."
+                          className={styles.tagInput}
+                        />
+                      </div>
+                      <button 
+                        type="button" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const trimmed = customGenreInput.trim();
+                          if (trimmed && !formData.genres.includes(trimmed)) {
+                            setFormData(prev => ({ ...prev, genres: [...prev.genres, trimmed] }));
+                            setCustomGenreInput('');
+                          } else if (!trimmed) {
+                            setIsGenrePanelOpen(!isGenrePanelOpen);
+                          }
+                        }} 
+                        className={styles.tagAddBtn}
+                        style={{
+                          transform: isGenrePanelOpen && !customGenreInput.trim() ? 'rotate(45deg)' : 'none',
+                          transition: 'transform 0.2s'
+                        }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                       </button>
-                    </span>
-                  ))}
-                  <div style={{ flex: 1, minWidth: '150px' }}>
-                    <input 
-                      type="text"
-                      name="customGenreInput" 
-                      value={customGenreInput} 
-                      onChange={e => setCustomGenreInput(e.target.value)} 
-                      onKeyDown={handleCustomGenreKeyDown}
-                      placeholder="Вписать свой жанр..."
-                      className={styles.tagInput}
-                    />
+                    </div>
                   </div>
-                  <button 
-                    type="button" 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const trimmed = customGenreInput.trim();
-                      if (trimmed && !formData.genres.includes(trimmed)) {
-                        setFormData(prev => ({ ...prev, genres: [...prev.genres, trimmed] }));
-                        setCustomGenreInput('');
-                      } else if (!trimmed) {
-                        setIsGenrePanelOpen(!isGenrePanelOpen);
-                      }
-                    }} 
-                    className={styles.tagAddBtn}
-                    style={{
-                      transform: isGenrePanelOpen && !customGenreInput.trim() ? 'rotate(45deg)' : 'none',
-                      transition: 'transform 0.2s'
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  </button>
+
+                  <div className={styles.formGroup}>
+                    <label>Загрузка архива (ZIP/RAR)</label>
+                    <div 
+                      className={`${styles.uploadZone} ${isDragOver ? styles.uploadZoneDragOver : ''}`}
+                      onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                      onDragLeave={(e) => { e.preventDefault(); setIsDragOver(false); }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setIsDragOver(false);
+                        const file = e.dataTransfer.files[0];
+                        if (file && (file.name.endsWith('.zip') || file.name.endsWith('.rar'))) {
+                          setUploadedArchive(file);
+                        } else {
+                          alert('Пожалуйста, загрузите файл .zip или .rar');
+                        }
+                      }}
+                      onClick={() => document.getElementById('archiveInput').click()}
+                    >
+                      <input 
+                        type="file" 
+                        id="archiveInput" 
+                        accept=".zip,.rar" 
+                        style={{display: 'none'}} 
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) setUploadedArchive(file);
+                        }}
+                      />
+                      <svg className={styles.uploadIcon} width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                      {uploadedArchive ? (
+                        <span className={styles.uploadTextHighlight}>{uploadedArchive.name}</span>
+                      ) : (
+                        <span className={styles.uploadText}>Перетащите архив сюда или <span className={styles.uploadTextHighlight}>выберите файл</span></span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className={styles.formGroup}>
-                <label>URL обложки</label>
-                <input name="cover" value={formData.cover} onChange={handleChange} placeholder="https://example.com/cover.jpg" />
-              </div>
-
-              <button type="submit" className={styles.submitBtn} disabled={loading}>
+              <button type="submit" className={styles.submitBtn} disabled={loading} style={{marginTop: 'auto', marginBottom: '16px'}}>
                 {loading ? 'Добавление...' : 'Сохранить мангу'}
               </button>
             </form>
