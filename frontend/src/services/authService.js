@@ -72,12 +72,9 @@ export function decodeGoogleJwt(token) {
   return JSON.parse(decodeURIComponent([...json].map(char => `%${char.charCodeAt(0).toString(16).padStart(2, '0')}`).join('')));
 }
 
-export async function registerUser({ username, email, password, passwordConfirm }) {
+export async function registerUser({ username, email, password }) {
   if (!/^[\p{L}\p{N}]{3,20}$/u.test(username)) {
     throw new Error('Логин должен быть от 3 до 20 символов: только буквы и цифры.');
-  }
-  if (password !== passwordConfirm) {
-    throw new Error('Пароли не совпадают.');
   }
 
   try {
