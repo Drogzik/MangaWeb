@@ -128,88 +128,75 @@ export default function AdminPanel() {
     }
   };
 
-  // Mock DB for realistic bot responses
-  const MOCK_DB = {
-    'игрок скрывает прошлое': {
-      title: 'Игрок скрывает прошлое',
-      author: 'Тэрон',
-      description: 'Главные персонажи: Ли Хо Джэ.\n\nОднажды перед его глазами появилось сообщение: «Добро пожаловать в мир Обучения». Ли Хо Джэ, бывший прогеймер, решает пройти испытание на сложности "Ад", где выживание кажется невозможным. Сможет ли он пройти обучение и скрыть свое прошлое?',
-      rating: 4.8,
-      chapters: 120,
-      genres: ['Сёнен', 'Экшен', 'Фэнтези', 'Исекай']
-    },
-    'наруто': {
-      title: 'Наруто',
-      author: 'Масаси Кисимото',
-      description: 'Главные персонажи: Наруто Узумаки, Саске Учиха, Сакура Харуно.\n\nИстория о шумном ниндзя-подростке, который мечтает стать Хокаге — лидером своей деревни.',
-      rating: 4.9,
-      chapters: 700,
-      genres: ['Сёнен', 'Экшен', 'Боевые искусства']
-    },
-    'ван пис': {
-      title: 'One Piece. Большой куш',
-      author: 'Эйитиро Ода',
-      description: 'Главные персонажи: Монки Д. Луффи, Ророноа Зоро, Нами.\n\nПриключения пиратской команды "Соломенной шляпы" в поисках величайшего сокровища в мире — Ван Пис.',
-      rating: 5.0,
-      chapters: 1100,
-      genres: ['Сёнен', 'Приключения', 'Комедия', 'Фэнтези']
-    },
-    'берсерк': {
-      title: 'Берсерк',
-      author: 'Кэнтаро Миура',
-      description: 'Главные персонажи: Гатс, Гриффит, Каска.\n\nМрачная история о Черном Мечнике Гатсе, который путешествует по жестокому миру, полному демонов и предательства.',
-      rating: 4.9,
-      chapters: 364,
-      genres: ['Сэйнэн', 'Дарк Фэнтези', 'Экшен', 'Трагедия']
-    },
-    'поднятие уровня в одиночку': {
-      title: 'Поднятие уровня в одиночку (Solo Leveling)',
-      author: 'Chu-Gong',
-      description: 'Главные персонажи: Сон Джин Ву.\n\nСлабейший охотник Е-ранга получает уникальную способность интерфейса Игрока, позволяющую ему бесконечно повышать свой уровень.',
-      rating: 4.9,
-      chapters: 179,
-      genres: ['Сёнен', 'Экшен', 'Фэнтези']
-    }
-  };
-
-  const handleBotSubmit = (e) => {
+  const handleBotSubmit = async (e) => {
     e.preventDefault();
     if (!botInput.trim()) return;
 
     setBotMessages(prev => [...prev, { role: 'user', text: botInput }]);
     const currentInput = botInput.trim();
-    const searchKey = currentInput.toLowerCase();
     setBotInput('');
 
-    setTimeout(() => {
-      // Look for a match in mock DB
-      const match = Object.keys(MOCK_DB).find(key => searchKey.includes(key) || key.includes(searchKey));
-      
-      if (match) {
-        const data = MOCK_DB[match];
-        setBotMessages(prev => [...prev, { 
-          role: 'bot', 
-          text: `Манга "${data.title}" найдена!\n\nОписание: ${data.description.split('\\n')[0]}...\nЖанры: ${data.genres.join(', ')}\n\nЯ заполнил форму. Нажмите на стрелочку, чтобы проверить и сохранить!`
-        }]);
+    // Добавляем сообщение о поиске
+    setBotMessages(prev => [...prev, { 
+      role: 'bot', 
+      text: `Ищу информацию по "${currentInput}" на внешних базах данных (Shikimori)... ⏳`
+    }]);
+
+    try {
+      const searchRes = await fetch(`https://shikimori.one/api/mangas?search=${encodeURIComponent(currentInput)}&limit=1`);
+      const searchData = await searchRes.json();
+
+      if (searchData && searchData.length > 0) {
+        const mangaId = searchData[0].id;
+        const detailRes = await fetch(`https://shikimori.one/api/mangas/${mangaId}`);
+        const data = await detailRes.json();
+
+        const title = data.russian || data.name;
+        // Очищаем BBCode-теги Shikimori
+        let desc = data.description || 'Описание отсутствует.';
+        desc = desc.replace(/\[\/?(i|b|spoiler|character|person|anime|manga|url)[^\]]*\]/gi, '');
+        
+        const genres = data.genres ? data.genres.map(g => g.russian) : [];
+        const score = data.score ? (parseFloat(data.score) / 2).toFixed(1) : 0; // Shikimori 10-балльная шкала -> 5 балльная
+        const chapters = data.chapters || data.volumes || 0;
+        const coverUrl = data.image ? `https://shikimori.one${data.image.original}` : '';
+        
+        setBotMessages(prev => [
+          ...prev.slice(0, prev.length - 1),
+          { 
+            role: 'bot', 
+            text: `Манга "${title}" найдена!\n\nОписание: ${desc.substring(0, 150)}...\nЖанры: ${genres.join(', ')}\n\nЯ заполнил форму. Проверьте данные и сохраните!`
+          }
+        ]);
         
         // Auto-fill form
         setFormData(prev => ({
           ...prev,
-          title: data.title,
-          author: data.author,
-          description: data.description,
-          rating: data.rating,
-          chapters: data.chapters,
-          genres: Array.from(new Set([...prev.genres, ...data.genres]))
+          title: title,
+          description: desc,
+          rating: score,
+          chapters: chapters,
+          cover: coverUrl,
+          genres: Array.from(new Set([...prev.genres, ...genres]))
         }));
       } else {
-        // Not found
-        setBotMessages(prev => [...prev, { 
-          role: 'bot', 
-          text: `К сожалению, манга "${currentInput}" не найдена в нашей базе. 😔\n\nПопробуйте ввести другое название или переключитесь на форму (нажав на стрелочку вверху) и добавьте её вручную.`
-        }]);
+        setBotMessages(prev => [
+          ...prev.slice(0, prev.length - 1),
+          { 
+            role: 'bot', 
+            text: `К сожалению, манга "${currentInput}" не найдена на Шикимори. 😔\n\nПопробуйте уточнить название.`
+          }
+        ]);
       }
-    }, 800);
+    } catch (err) {
+      setBotMessages(prev => [
+        ...prev.slice(0, prev.length - 1),
+        { 
+          role: 'bot', 
+          text: `Ошибка при поиске: ${err.message}`
+        }
+      ]);
+    }
   };
 
   return (
