@@ -74,6 +74,12 @@ export function AuthProvider({ children }) {
 
   const handleVerify = useCallback(async (code) => {
     if (code.length < 6) throw new Error('Код должен состоять из 6 цифр');
+    
+    // Временная заглушка: принимаем только код 123456
+    if (code !== '123456') {
+      throw new Error('Неверный код верификации. Попробуйте 123456');
+    }
+
     // Simulate API verification call
     const user = await registerUser(pendingUser);
     finishAuth(user, 'Аккаунт подтверждён и создан!');
