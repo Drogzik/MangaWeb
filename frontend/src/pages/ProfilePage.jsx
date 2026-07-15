@@ -46,6 +46,8 @@ export default function ProfilePage() {
   const [userGender, setUserGender] = useState(() => localStorage.getItem('profileGender') || 'Мужской');
   const [selectedFavCharId, setSelectedFavCharId] = useState(() => localStorage.getItem('profileFavChar') || 'reze');
   
+  const [profileDescription, setProfileDescription] = useState(() => localStorage.getItem('profileDescription') || '');
+  
   useEffect(() => {
     const handleStorageChange = () => {
       setSelectedAvatar(localStorage.getItem('profileAvatar') || '/avatar_reze_1783959680874.jpg');
@@ -53,6 +55,7 @@ export default function ProfilePage() {
       setSelectedFrame(localStorage.getItem('profileFrame') || 'none');
       setSelectedWallpaper(localStorage.getItem('profileWallpaper') || 'none');
       setUserGender(localStorage.getItem('profileGender') || 'Мужской');
+      setProfileDescription(localStorage.getItem('profileDescription') || '');
     };
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('profile-updated', handleStorageChange);
@@ -129,8 +132,15 @@ export default function ProfilePage() {
           </div>
           <div className={styles.phInfo}>
             <h1>{session?.username || 'Tor1cks'}</h1>
-            <div className={styles.levelBadge}>
-              <span className={styles.lvlNum}>1</span> Уровень
+            <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+              <div className={styles.levelBadge}>
+                <span className={styles.lvlNum}>1</span> Уровень
+              </div>
+              {profileDescription && (
+                <div style={{ color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '400px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {profileDescription}
+                </div>
+              )}
             </div>
           </div>
           {/* Edit button now navigates to settings appearance tab */}

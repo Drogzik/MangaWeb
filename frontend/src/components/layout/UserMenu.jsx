@@ -66,7 +66,19 @@ export default function UserMenu() {
     setIsOpen(false);
   };
 
-  const avatarSrc = session?.avatar || '/default_avatar.jpg';
+  const [avatarSrc, setAvatarSrc] = useState(() => localStorage.getItem('profileAvatar') || session?.avatar || '/default_avatar.jpg');
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setAvatarSrc(localStorage.getItem('profileAvatar') || session?.avatar || '/default_avatar.jpg');
+    };
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('profile-updated', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('profile-updated', handleStorageChange);
+    };
+  }, [session]);
 
   return (
     <div className="user-menu-wrapper" ref={menuRef}>

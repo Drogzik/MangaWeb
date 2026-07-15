@@ -142,6 +142,16 @@ export default function SettingsPage() {
     return { days, firstDay };
   };
 
+  const [profileDescription, setProfileDescription] = useState(() => localStorage.getItem('profileDescription') || '');
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
+
+  const handleSaveProfile = () => {
+    localStorage.setItem('profileDescription', profileDescription);
+    window.dispatchEvent(new Event('profile-updated'));
+    setSaveSuccessMsg('Изменения успешно сохранены!');
+    setTimeout(() => setSaveSuccessMsg(''), 3000);
+  };
+
   const { days, firstDay } = getDaysInMonth(currentMonth);
   const calendarDays = [];
   for (let i = 0; i < firstDay; i++) calendarDays.push(null);
@@ -275,8 +285,10 @@ export default function SettingsPage() {
                       className={styles.formTextarea} 
                       placeholder="Напишите что-нибудь..."
                       maxLength={2048}
+                      value={profileDescription}
+                      onChange={(e) => setProfileDescription(e.target.value)}
                     ></textarea>
-                    <div className={styles.textareaFooter}>0/2048</div>
+                    <div className={styles.textareaFooter}>{profileDescription.length}/2048</div>
                   </div>
 
                   <div className={styles.formGroup}>
@@ -415,7 +427,10 @@ export default function SettingsPage() {
                   </button>
                 </div>
 
-                <button className={styles.saveBtn}>Сохранить изменения</button>
+                <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+                  <button className={styles.saveBtn} onClick={handleSaveProfile}>Сохранить изменения</button>
+                  {saveSuccessMsg && <span style={{color: '#4ade80', fontSize: '14px', fontWeight: '500', animation: 'fadeIn 0.3s'}}>{saveSuccessMsg}</span>}
+                </div>
               </>
             )}
 
