@@ -940,20 +940,29 @@
   right: -45px !important;
   transform: translate(0, 0);
   transform-origin: 30% 70%;
-  animation: fanOpen 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fanWave 5s ease-in-out 0.7s infinite;
+  animation: fanOpen 1.2s ease-out forwards, fanWave 3s ease-in-out 1.2s infinite;
 }
 
 @keyframes fanOpen {
-  0% { transform: translate(0, 0) rotate(-90deg) scale(0); opacity: 0; }
-  100% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  0% { 
+    clip-path: polygon(30% 70%, 100% 30%, 100% 30%, 100% 30%, 100% 30%);
+    transform: translate(0, 0) rotate(15deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% { 
+    clip-path: polygon(30% 70%, 120% 120%, 120% -20%, -20% -20%, -20% 120%);
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
 }
 
 @keyframes fanWave {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  15% { transform: translate(0, 0) rotate(-25deg); }
-  30% { transform: translate(0, 0) rotate(5deg); }
-  45% { transform: translate(0, 0) rotate(-10deg); }
-  60%, 100% { transform: translate(0, 0) rotate(0deg); }
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(0, 0) rotate(-20deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
 }
 
 .animHat {
