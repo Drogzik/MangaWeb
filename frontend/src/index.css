@@ -2988,12 +2988,22 @@ img { max-width: 100%; display: block; }
 @media (max-width: 768px) {
   body { padding-bottom: calc(var(--mobile-nav-height) + 8px); }
   .mobile-nav { display: flex; }
-  .header__actions .btn--primary { display: none; }
-  .header__inner {
-    grid-template-columns: auto 1fr;
-    gap: 12px;
+  
+  .header {
+    top: 12px !important;
   }
-  .nav--desktop { display: none; }
+  .header__inner {
+    padding: 0 12px !important;
+  }
+  .header__pill {
+    padding: 6px 16px !important;
+    width: 100% !important;
+  }
+  .logo { font-size: 16px !important; }
+  
+  .header__actions .btn--primary { display: none; }
+  .nav--desktop { display: none !important; }
+  
   .activity-grid {
     display: flex;
     overflow-x: auto;
@@ -3018,6 +3028,18 @@ img { max-width: 100%; display: block; }
   .logo__text { display: none; }
   .header__search-input { font-size: 13px; }
   .section__header { flex-direction: column; align-items: flex-start; }
+  .section__header-actions { width: 100%; justify-content: flex-end; }
+  .hero-card__cover { display: none; }
+  .hero-card__content { padding: 16px; }
+  .hero-card__stats { flex-wrap: wrap; }
+  .catalog-filters-btn { width: 100%; }
+  
+  .manga-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .manga-grid--catalog { grid-template-columns: repeat(2, 1fr) !important; }
+  .manga-grid--compact { grid-template-columns: repeat(2, 1fr) !important; }
   .tops-item__stats { display: none; }
 }
 
@@ -3088,6 +3110,41 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .manga-content {
+    flex-direction: column;
+    align-items: center;
+    margin-top: -80px;
+    gap: 24px;
+  }
+  
+  .manga-sidebar {
+    width: 200px;
+  }
+  
+  .manga-main {
+    width: 100%;
+    min-width: 0;
+  }
+  
+  .manga-header__titles {
+    text-align: center;
+  }
+  
+  .manga-header__rating {
+    justify-content: center;
+  }
+  
+  .manga-tags {
+    justify-content: center;
+  }
+  
+  .manga-stats {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 
 .manga-actions .btn {

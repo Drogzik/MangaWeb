@@ -42,6 +42,7 @@ function App() {
   return (
     <>
       {!isReader && <Header onOpenSearch={() => setIsSearchOpen(true)} />}
+      {!isReader && <MobileNav onOpenSearch={() => setIsSearchOpen(true)} />}
       
       <Routes>
         <Route path="/" element={<HomePage />} />
