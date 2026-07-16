@@ -147,13 +147,13 @@ export default function ProfilePage() {
             )}
           </div>
           <div className={styles.phInfo}>
-            <h1>{session?.username || 'Tor1cks'}</h1>
-            <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+            <h1 className={styles.username}>{session?.username || 'Tor1cks'}</h1>
+            <div className={styles.phMeta}>
               <div className={styles.levelBadge}>
                 <span className={styles.lvlNum}>1</span> Уровень
               </div>
               {profileDescription && (
-                <div style={{ color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '400px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div className={styles.phDescription}>
                   {profileDescription}
                 </div>
               )}

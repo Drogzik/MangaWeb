@@ -145,8 +145,26 @@
   font-size: 13px;
 }
 
+.phMeta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.phDescription {
+  color: var(--text-secondary);
+  font-size: 14px;
+  max-width: 400px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.phActions {
+  margin-left: auto;
+}
+
 .editBtn {
-  margin-bottom: 12px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -993,22 +1011,22 @@
     font-size: 24px;
     text-align: center;
   }
-  .phLevel {
-    justify-content: center;
+  .phMeta {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
   }
-  .phStatus {
-    margin: 8px auto 0;
+  .phDescription {
+    white-space: normal;
+    text-align: center;
   }
   .phActions {
     width: 100%;
-    margin-top: 16px;
+    margin-top: 8px;
   }
-  .phActions .btn {
-    flex: 1;
-  }
-  .editProfileBtn {
+  .editBtn {
     width: 100%;
-    margin-top: 16px;
+    justify-content: center;
   }
   .activityGrid {
     grid-template-columns: repeat(2, 1fr);
