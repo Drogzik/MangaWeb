@@ -313,12 +313,19 @@ public class SmartSearchService
             }
 
             if (dContent.TryGetProperty("count_chapters", out var chaps))
-                result.Chapters = chaps.GetInt32();
+            {
+                if (chaps.ValueKind == JsonValueKind.Number)
+                    result.Chapters = chaps.GetInt32();
+                else if (chaps.ValueKind == JsonValueKind.String && int.TryParse(chaps.GetString(), out var c))
+                    result.Chapters = c;
+            }
                 
             if (dContent.TryGetProperty("avg_rating", out var rating))
             {
-                if (double.TryParse(rating.GetString(), out var rat))
-                     result.Rating = Math.Round(rat / 2.0, 1);
+                if (rating.ValueKind == JsonValueKind.Number)
+                    result.Rating = Math.Round(rating.GetDouble() / 2.0, 1);
+                else if (rating.ValueKind == JsonValueKind.String && double.TryParse(rating.GetString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var rat))
+                    result.Rating = Math.Round(rat / 2.0, 1);
             }
             
             if (dContent.TryGetProperty("img", out var img) && img.TryGetProperty("high", out var highImg))
