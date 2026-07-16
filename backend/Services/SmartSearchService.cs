@@ -291,7 +291,8 @@ public class SmartSearchService
             if (dContent.TryGetProperty("description", out var desc))
             {
                 var dStr = desc.GetString() ?? "";
-                dStr = System.Text.RegularExpressions.Regex.Replace(dStr, "<.*?>", "");
+                dStr = System.Text.RegularExpressions.Regex.Replace(dStr, "<.*?>", " ");
+                dStr = System.Text.RegularExpressions.Regex.Replace(dStr, @"\s+", " ").Trim();
                 result.Description = dStr;
             }
 
@@ -306,7 +307,11 @@ public class SmartSearchService
             {
                 foreach(var c in cats.EnumerateArray())
                     if(c.TryGetProperty("name", out var cName) && !string.IsNullOrEmpty(cName.GetString()))
-                        result.Genres.Add(cName.GetString()!);
+                    {
+                        var catStr = cName.GetString()!;
+                        if (catStr != "В цвете" && catStr != "Веб" && catStr != "Адаптация" && catStr != "Комикс" && catStr != "Сингл" && catStr != "Сборник")
+                            result.Genres.Add(catStr);
+                    }
             }
 
 
