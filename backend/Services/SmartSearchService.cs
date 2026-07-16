@@ -91,9 +91,9 @@ public class SmartSearchService
             .OrderByDescending(d => d!.Length)
             .ToList();
         
-        result.Description = descriptions.FirstOrDefault() ?? string.Empty;
+        result.Description = System.Net.WebUtility.HtmlDecode(descriptions.FirstOrDefault() ?? string.Empty);
 
-        result.Author = remangaData?.Author ?? dexData?.Author ?? shikiData?.Author ?? string.Empty;
+        result.Author = dexData?.Author ?? shikiData?.Author ?? remangaData?.Author ?? string.Empty;
         result.MainCharacter = remangaData?.MainCharacter ?? shikiData?.MainCharacter ?? string.Empty;
 
         result.CoverUrl = shikiData?.CoverUrl ?? remangaData?.CoverUrl ?? string.Empty;
